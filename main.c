@@ -1,17 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-// #define LIVE '@'
-// #define DEAD 'a'
-
-// #define LIVE "░"
-// #define DEAD "█"
-
-// #define LIVE "█"
-// #define DEAD "░"
-
-#define LIVE "█"
-#define DEAD " "
+#define LIVE "██"
+#define DEAD "  "
 
 // static int SIZE = sizeof(unsigned long long);
 #define SIZE 8
@@ -23,20 +14,20 @@
 
 static void print_game(ULL game)
 {
-    printf("╔════════╗\n");
+    printf("╔════════════════╗\n");
+
     for (int y = SIZE - 1; y >= 0; y--)
     {
         printf("║");
-        // unsigned long long line = (game >> (y * SIZE)) & 255;
+
         unsigned char line = (game >> (y * SIZE));
         for (int x = SIZE - 1; x >= 0; x--)
-        {
-            // putchar((line >> x) & 1 ? LIVE : DEAD);
             printf((line >> x) & 1 ? LIVE : DEAD);
-        }
+
         printf("║\n");
     }
-    printf("╚════════╝\n");
+
+    printf("╚════════════════╝\n");
 }
 
 static unsigned int get_neighbours_count(ULL game, int x, int y)
@@ -122,10 +113,12 @@ int main(int argc, char **argv)
         generation_count++;
         game = game_next_generation;
 
-        // sleep(1);
-        usleep(300000);
+        // Sleep 0.15 sec.
+        usleep(150000);
 
-        printf("\nGeneration %d:\n", generation_count);
+        printf("\nGeneration %d: %llu\n", generation_count, game);
         print_game(game);
     }
+
+    printf("Game ended, all life is still.\n");
 }
