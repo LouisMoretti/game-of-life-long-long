@@ -1,8 +1,17 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define ONE '@'
-#define ZERO 'a'
+// #define LIVE '@'
+// #define DEAD 'a'
+
+// #define LIVE "░"
+// #define DEAD "█"
+
+// #define LIVE "█"
+// #define DEAD "░"
+
+#define LIVE "█"
+#define DEAD " "
 
 // static int SIZE = sizeof(unsigned long long);
 #define SIZE 8
@@ -14,113 +23,72 @@
 
 static void print_game(ULL game)
 {
+    printf("╔════════╗\n");
     for (int y = SIZE - 1; y >= 0; y--)
     {
+        printf("║");
         // unsigned long long line = (game >> (y * SIZE)) & 255;
         unsigned char line = (game >> (y * SIZE));
         for (int x = SIZE - 1; x >= 0; x--)
         {
-            putchar((line >> x) & 1 ? ONE : ZERO);
-            // putchar(' ');
+            // putchar((line >> x) & 1 ? LIVE : DEAD);
+            printf((line >> x) & 1 ? LIVE : DEAD);
         }
-        putchar('\n');
+        printf("║\n");
     }
+    printf("╚════════╝\n");
 }
 
-static unsigned int get_adjacent_count(ULL game, int x, int y)
+static unsigned int get_neighbours_count(ULL game, int x, int y)
 {
-    unsigned int nb = 0;
+    unsigned int neighbours_count = 0;
 
-    if (x == SIZE - 1)
+    if (x != 0)
     {
-        nb += ((game >> (y * SIZE + x - 1)) & 1);
+        neighbours_count += ((game >> (y * SIZE + x - 1)) & 1);
 
-        if (y == SIZE - 1)
-        {
-            nb += ((game >> ((y - 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y - 1) * SIZE + x)) & 1);
-        }
-        else if (y == 0)
-        {
-            nb += ((game >> ((y + 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y + 1) * SIZE + x)) & 1);
-        }
-        else
-        {
-            nb += ((game >> ((y - 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y - 1) * SIZE + x)) & 1)
-                + ((game >> ((y + 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y + 1) * SIZE + x)) & 1);
-        }
-    }
-    else if (x == 0)
-    {
-        nb += ((game >> (y * SIZE + x + 1)) & 1);
+        if (y != 0)
+            neighbours_count += ((game >> ((y - 1) * SIZE + x - 1)) & 1);
 
-        if (y == SIZE - 1)
-        {
-            nb += ((game >> ((y - 1) * SIZE + x)) & 1)
-                + ((game >> ((y - 1) * SIZE + x + 1)) & 1);
-        }
-        else if (y == 0)
-        {
-            nb += ((game >> ((y + 1) * SIZE + x)) & 1)
-                + ((game >> ((y + 1) * SIZE + x + 1)) & 1);
-        }
-        else
-        {
-            nb += ((game >> ((y - 1) * SIZE + x)) & 1)
-                + ((game >> ((y - 1) * SIZE + x + 1)) & 1)
-                + ((game >> ((y + 1) * SIZE + x)) & 1)
-                + ((game >> ((y + 1) * SIZE + x + 1)) & 1);
-        }
-    }
-    else
-    {
-        nb += ((game >> (y * SIZE + x - 1)) & 1)
-            + ((game >> (y * SIZE + x + 1)) & 1);
-
-        if (y == SIZE - 1)
-        {
-            nb += ((game >> ((y - 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y - 1) * SIZE + x)) & 1)
-                + ((game >> ((y - 1) * SIZE + x + 1)) & 1);
-        }
-        else if (y == 0)
-        {
-            nb += ((game >> ((y + 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y + 1) * SIZE + x)) & 1)
-                + ((game >> ((y + 1) * SIZE + x + 1)) & 1);
-        }
-        else
-        {
-            nb += ((game >> ((y - 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y - 1) * SIZE + x)) & 1)
-                + ((game >> ((y - 1) * SIZE + x + 1)) & 1)
-                + ((game >> ((y + 1) * SIZE + x - 1)) & 1)
-                + ((game >> ((y + 1) * SIZE + x)) & 1)
-                + ((game >> ((y + 1) * SIZE + x + 1)) & 1);
-        }
+        if (y != SIZE - 1)
+            neighbours_count += ((game >> ((y + 1) * SIZE + x - 1)) & 1);
     }
 
-    return nb;
+    if (x != SIZE - 1)
+    {
+        neighbours_count += ((game >> (y * SIZE + x + 1)) & 1);
+
+        if (y != 0)
+            neighbours_count += ((game >> ((y - 1) * SIZE + x + 1)) & 1);
+
+        if (y != SIZE - 1)
+            neighbours_count += ((game >> ((y + 1) * SIZE + x + 1)) & 1);
+    }
+
+    if (y != 0)
+        neighbours_count += ((game >> ((y - 1) * SIZE + x)) & 1);
+
+    if (y != SIZE - 1)
+        neighbours_count += ((game >> ((y + 1) * SIZE + x)) & 1);
+
+    return neighbours_count;
 }
 
-static ULL next_step(ULL game)
+static ULL next_generation(ULL game)
 {
-    ULL next_game = 0;
+    ULL next_generation = 0;
     for (int y = SIZE - 1; y >= 0; y--)
     {
         for (int x = SIZE - 1; x >= 0; x--)
         {
-            unsigned int adjacent_count = get_adjacent_count(game, x, y);
-            next_game += (ULL)(adjacent_count == 3
-                               || (adjacent_count == 2
-                                   && ((game >> (y * SIZE + x)) & 1)))
+            unsigned int neighbours_count = get_neighbours_count(game, x, y);
+            next_generation += (ULL)(neighbours_count == 3
+                                     || (neighbours_count == 2
+                                         && ((game >> (y * SIZE + x)) & 1)))
                 << (y * SIZE + x);
         }
     }
-    return next_game;
+    return next_generation;
 }
 
 int main(int argc, char **argv)
@@ -135,25 +103,29 @@ int main(int argc, char **argv)
         0b00000000,
         0b00000000,
         0b00000000,
-        0b00000000,
+        0b11100000,
         0b00000000
     );
     // clang-format on
 
+    // Print initial state.
     print_game(game);
 
+    int generation_count = 0;
     while (1)
     {
-        ULL game_next_step = next_step(game);
+        ULL game_next_generation = next_generation(game);
 
-        if (game_next_step == game)
+        if (game_next_generation == game)
             break;
 
-        game = game_next_step;
+        generation_count++;
+        game = game_next_generation;
 
-        sleep(1);
+        // sleep(1);
+        usleep(300000);
 
-        puts("\nNext step:");
+        printf("\nGeneration %d:\n", generation_count);
         print_game(game);
     }
 }
