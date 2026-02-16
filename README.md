@@ -2,5 +2,5 @@
 
 Start game with:
 ```Bash
-$ gcc main.c -g; ./a.out
+$ gcc main.c -O3; ./a.out
 ```

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <unistd.h>
+// #include <unistd.h>
 
 #define LIVE "██"
 #define DEAD "  "
@@ -88,9 +88,12 @@ int main(int argc, char **argv)
 
     // clang-format off
     ULL game = BIT_BOARD(
-        0b01000000,
-        0b00100000,
-        0b11100000,
+        // 0b01000000,
+        // 0b00100000,
+        // 0b11100000,
+        0b00000000,
+        0b00000000,
+        0b00000000,
         0b00000000,
         0b00000000,
         0b00000000,
@@ -105,19 +108,22 @@ int main(int argc, char **argv)
     int generation_count = 0;
     while (1)
     {
-        ULL game_next_generation = next_generation(game);
+        game = next_generation(game);
 
-        if (game_next_generation == game)
-            break;
+        // if (game_next_generation == game)
+        //     break;
 
         generation_count++;
-        game = game_next_generation;
+        // game = game_next_generation;
 
         // Sleep 0.15 sec.
-        usleep(150000);
+        // usleep(150000);
 
-        printf("\nGeneration %d: %llu\n", generation_count, game);
-        print_game(game);
+        if (generation_count % 10000000 == 0)
+        {
+            printf("\nGeneration %d: %llu\n", generation_count, game);
+            print_game(game);
+        }
     }
 
     printf("Game ended, all life is still.\n");
